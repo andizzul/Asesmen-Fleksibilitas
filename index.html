@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Tes Fleksibilitas MPLS Ramah</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -44,6 +44,8 @@
     position:relative;
     width:min(100vw, calc(100vh * 9 / 16));
     height:min(100vh, calc(100vw * 16 / 9));
+    width:min(100vw, calc(100dvh * 9 / 16));
+    height:min(100dvh, calc(100vw * 16 / 9));
     background:var(--white);
     overflow:hidden;
     box-shadow:0 30px 80px rgba(0,0,0,.55);
@@ -56,6 +58,7 @@
     background:var(--blue);
     color:var(--white);
     padding:18px 20px 16px;
+    padding-top:calc(18px + env(safe-area-inset-top));
     flex:0 0 auto;
     position:relative;
     overflow:hidden;
@@ -217,6 +220,7 @@
   .bottom-bar{
     flex:0 0 auto;
     padding:14px 20px 18px;
+    padding-bottom:calc(18px + env(safe-area-inset-bottom));
     border-top:1px solid var(--line);
     background:var(--white);
   }
@@ -384,7 +388,7 @@
       <div class="scroll" id="formScroll">
 
         <div class="banner banner-locked" id="lockedBanner" style="display:none;">
-          Data murid ini sudah tersimpan di spreadsheet dan terkunci. Kosongkan sel terkait di spreadsheet untuk mengisi ulang.
+          Data murid sudah tersimpan dan terkunci, Anda tidak dapat mengisi ulang kecuali admin menghapus semua data di server.
         </div>
         <div class="banner banner-success" id="successBanner" style="display:none;">
           Data berhasil dikirim dan tersimpan.
@@ -402,7 +406,7 @@
 
         <div class="row-2">
           <div class="field">
-            <label for="tinggiInput">Tinggi Badan (cm)</label>
+            <label for="tinggiInput">Tinggi Badan (meter)</label>
             <input type="text" inputmode="decimal" id="tinggiInput" placeholder="contoh: 158,5">
           </div>
           <div class="field">
