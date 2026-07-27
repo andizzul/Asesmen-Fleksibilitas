@@ -628,7 +628,25 @@ document.querySelectorAll('#disabilitasToggle .toggle-opt').forEach(opt => {
     document.querySelectorAll('#disabilitasToggle .toggle-opt').forEach(o => o.classList.remove('selected'));
     opt.classList.add('selected');
     disabilitasVal = opt.dataset.val;
+    refreshSubmitButtonState();
   });
+});
+
+/* Percobaan 1-3, Raihan Terbaik, dan Disabilitas wajib diisi sebelum
+   tombol "Kirim Data" bisa diklik. */
+function isFormComplete(){
+  const sr1 = document.getElementById('sr1Input').value.trim();
+  const sr2 = document.getElementById('sr2Input').value.trim();
+  const sr3 = document.getElementById('sr3Input').value.trim();
+  const srBest = document.getElementById('srBestInput').value.trim();
+  return !!disabilitasVal && sr1 !== '' && sr2 !== '' && sr3 !== '' && srBest !== '';
+}
+function refreshSubmitButtonState(){
+  if(state.locked) return;
+  document.getElementById('btnSubmit').disabled = !isFormComplete();
+}
+['sr1Input','sr2Input','sr3Input','srBestInput'].forEach(id => {
+  document.getElementById(id).addEventListener('input', refreshSubmitButtonState);
 });
 
 function resetForm(){
@@ -642,6 +660,7 @@ function resetForm(){
   document.getElementById('successBanner').style.display = 'none';
   document.getElementById('btnSubmit').style.display = 'block';
   setError('formError', '');
+  refreshSubmitButtonState();
 }
 
 async function selectMurid(nama){
@@ -679,6 +698,7 @@ async function selectMurid(nama){
           document.getElementById(id).disabled = true;
         });
       }
+      refreshSubmitButtonState();
     } else {
       setError('formError', resp.message || 'Gagal memuat data murid.');
     }
