@@ -363,7 +363,6 @@
     <!-- ============ SCREEN: PILIH MURID ============ -->
     <section class="screen" id="screen-murid">
       <div class="topbar">
-        <div class="backlink" id="backToHome">&larr; Beranda</div>
         <div class="eyebrow" id="rombelLabel">Rombel</div>
         <div class="title">Pilih Murid</div>
       </div>
@@ -371,12 +370,14 @@
         <div id="muridList"></div>
         <div class="error-msg" id="muridError"></div>
       </div>
+      <div class="bottom-bar">
+        <button class="btn btn-outline" id="backToHome">&larr; Beranda</button>
+      </div>
     </section>
 
     <!-- ============ SCREEN: FORM INPUT ============ -->
     <section class="screen" id="screen-form">
       <div class="topbar">
-        <div class="backlink" id="backToMurid">&larr; Daftar Murid</div>
         <div class="eyebrow" id="formRombelLabel">Rombel</div>
         <div class="title" id="formMuridName">Nama Murid</div>
       </div>
@@ -437,6 +438,7 @@
         <div class="error-msg" id="formError"></div>
       </div>
       <div class="bottom-bar">
+        <button class="btn btn-outline" id="backToMurid" style="margin-bottom:10px;">&larr; Daftar Murid</button>
         <button class="btn btn-primary" id="btnSubmit">Kirim Data</button>
       </div>
     </section>
