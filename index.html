@@ -100,6 +100,7 @@
 
   .scroll{
     flex:1 1 auto;
+    min-height:0;
     overflow-y:auto;
     padding:18px 20px 20px;
   }
@@ -354,6 +355,9 @@
         <div id="rombelList"></div>
         <div class="error-msg" id="rombelError"></div>
       </div>
+      <div class="bottom-bar">
+        <button class="btn btn-outline" id="btnLogout">Logout</button>
+      </div>
     </section>
 
     <!-- ============ SCREEN: PILIH MURID ============ -->
@@ -397,8 +401,8 @@
 
         <div class="row-2">
           <div class="field">
-            <label for="tinggiInput">Tinggi Badan (meter)</label>
-            <input type="text" inputmode="decimal" id="tinggiInput" placeholder="contoh: 1,4">
+            <label for="tinggiInput">Tinggi Badan (cm)</label>
+            <input type="text" inputmode="decimal" id="tinggiInput" placeholder="contoh: 158,5">
           </div>
           <div class="field">
             <label for="beratInput">Berat Badan (kg)</label>
@@ -530,6 +534,7 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
     hideLoading();
     if(resp.ok){
       state.pengguna = resp.pengguna;
+      localStorage.setItem('mpls_pengguna', resp.pengguna);
       document.getElementById('userName').textContent = resp.pengguna;
       document.getElementById('avatarInitial').textContent = resp.pengguna.charAt(0).toUpperCase();
       loadRombel();
@@ -716,6 +721,30 @@ document.getElementById('btnSubmit').addEventListener('click', async () => {
     setError('formError', 'Tidak dapat terhubung ke server.');
   }
 });
+
+/* ============ LOGOUT ============ */
+document.getElementById('btnLogout').addEventListener('click', () => {
+  localStorage.removeItem('mpls_pengguna');
+  state.pengguna = null;
+  state.rombel = null;
+  state.nama = null;
+  state.locked = false;
+  document.getElementById('kodeInput').value = '';
+  setError('loginError', '');
+  showScreen('screen-login');
+});
+
+/* ============ SESSION RESTORE (jangan logout otomatis saat refresh) ============ */
+(function restoreSession(){
+  const savedPengguna = localStorage.getItem('mpls_pengguna');
+  if(savedPengguna){
+    state.pengguna = savedPengguna;
+    document.getElementById('userName').textContent = savedPengguna;
+    document.getElementById('avatarInitial').textContent = savedPengguna.charAt(0).toUpperCase();
+    loadRombel();
+    showScreen('screen-home');
+  }
+})();
 </script>
 </body>
 </html>
