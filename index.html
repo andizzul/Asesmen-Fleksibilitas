@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tes Fleksibilitas MPLS Ramah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --orange:#FF6A1A;
+    --orange-dark:#E0530A;
+    --blue:#173B8C;
+    --blue-light:#2C56C4;
+    --black:#131313;
+    --white:#FFFFFF;
+    --gray-bg:#F5F6F9;
+    --line:#E6E8F0;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html,body{
+    height:100%;
+    background:var(--black);
+    font-family:'Inter',sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* ---- fixed 9:16 frame, always, on any device ---- */
+  .stage{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,106,26,.12), transparent 45%),
+      radial-gradient(circle at 80% 80%, rgba(23,59,140,.25), transparent 45%),
+      var(--black);
+  }
+
+  #app{
+    position:relative;
+    width:min(100vw, calc(100vh * 9 / 16));
+    height:min(100vh, calc(100vw * 16 / 9));
+    background:var(--white);
+    overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,.55);
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---- shared bits ---- */
+  .topbar{
+    background:var(--blue);
+    color:var(--white);
+    padding:18px 20px 16px;
+    flex:0 0 auto;
+    position:relative;
+    overflow:hidden;
+  }
+  .topbar::after{
+    content:"";
+    position:absolute;
+    right:-30px; top:-40px;
+    width:140px; height:140px;
+    background:var(--orange);
+    opacity:.18;
+    border-radius:50%;
+  }
+  .eyebrow{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--orange);
+    font-weight:700;
+  }
+  .title{
+    font-family:'Poppins',sans-serif;
+    font-size:20px;
+    font-weight:700;
+    margin-top:4px;
+    line-height:1.25;
+  }
+  .subtitle{
+    font-size:12.5px;
+    color:rgba(255,255,255,.75);
+    margin-top:4px;
+  }
+
+  .screen{
+    flex:1 1 auto;
+    display:none;
+    flex-direction:column;
+    min-height:0;
+  }
+  .screen.active{display:flex;}
+
+  .scroll{
+    flex:1 1 auto;
+    overflow-y:auto;
+    padding:18px 20px 20px;
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:14px 16px;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn-primary{
+    background:var(--orange);
+    color:var(--white);
+    box-shadow:0 8px 18px rgba(255,106,26,.35);
+  }
+  .btn-primary:hover{background:var(--orange-dark);}
+  .btn-outline{
+    background:var(--white);
+    color:var(--blue);
+    border:1.5px solid var(--blue);
+  }
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--blue);
+    margin-bottom:6px;
+  }
+  .field input, .field select{
+    width:100%;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    font-size:14.5px;
+    font-family:'Inter',sans-serif;
+    background:var(--gray-bg);
+    color:var(--black);
+    outline:none;
+  }
+  .field input:focus, .field select:focus{
+    border-color:var(--orange);
+    background:var(--white);
+  }
+  .field input:disabled{
+    background:#EFEFEF;
+    color:#888;
+  }
+
+  .error-msg{
+    color:#B3261E;
+    font-size:12.5px;
+    font-weight:600;
+    margin-top:8px;
+    min-height:16px;
+  }
+
+  .card{
+    background:var(--white);
+    border:1.5px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    cursor:pointer;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .card:hover{border-color:var(--orange);}
+  .card .name{font-weight:700; font-size:14.5px; color:var(--black);}
+  .card .meta{font-size:11.5px; color:#888; margin-top:2px;}
+  .badge{
+    font-size:10.5px;
+    font-weight:700;
+    padding:4px 8px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .badge-locked{background:#173B8C1A; color:var(--blue);}
+  .badge-open{background:#FF6A1A1A; color:var(--orange-dark);}
+
+  .toggle-group{display:flex; gap:10px;}
+  .toggle-opt{
+    flex:1;
+    text-align:center;
+    padding:12px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    background:var(--gray-bg);
+    color:#555;
+  }
+  .toggle-opt.selected{
+    border-color:var(--orange);
+    background:var(--orange);
+    color:var(--white);
+  }
+
+  .bottom-bar{
+    flex:0 0 auto;
+    padding:14px 20px 18px;
+    border-top:1px solid var(--line);
+    background:var(--white);
+  }
+
+  .row-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+  .loading-overlay{
+    position:absolute; inset:0;
+    background:rgba(255,255,255,.85);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap:12px;
+    z-index:50;
+  }
+  .loading-overlay.active{display:flex;}
+  .spinner{
+    width:34px; height:34px;
+    border:4px solid var(--line);
+    border-top-color:var(--orange);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{font-size:12.5px; color:var(--blue); font-weight:600;}
+
+  .backlink{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:rgba(255,255,255,.85);
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    margin-bottom:6px;
+  }
+
+  .banner{
+    border-radius:12px;
+    padding:12px 14px;
+    font-size:12.5px;
+    font-weight:600;
+    margin-bottom:14px;
+  }
+  .banner-locked{background:#173B8C14; color:var(--blue); border:1px solid #173B8C33;}
+  .banner-success{background:#0E8A4A14; color:#0E8A4A; border:1px solid #0E8A4A33;}
+
+  .user-pill{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:rgba(255,255,255,.12);
+    border-radius:12px;
+    padding:10px 12px;
+    margin-top:12px;
+  }
+  .avatar{
+    width:34px; height:34px;
+    border-radius:50%;
+    background:var(--orange);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Poppins',sans-serif;
+    font-weight:700;
+    color:var(--white);
+    font-size:14px;
+    flex:0 0 auto;
+  }
+  .user-pill .u-name{font-weight:700; font-size:13.5px;}
+  .user-pill .u-role{font-size:11px; color:rgba(255,255,255,.7);}
+
+  .section-title{
+    font-family:'Poppins',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--black);
+    margin:2px 0 12px;
+  }
+
+  .hint{font-size:11.5px; color:#888; margin-top:-8px; margin-bottom:14px;}
+
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-thumb{background:#D8DAE4; border-radius:10px;}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div id="app">
+
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loadingText">Memuat...</div>
+    </div>
+
+    <!-- ============ SCREEN: LOGIN ============ -->
+    <section class="screen active" id="screen-login">
+      <div class="topbar">
+        <div class="eyebrow">MPLS Ramah</div>
+        <div class="title">Tes Fleksibilitas</div>
+        <div class="subtitle">Sit &amp; Reach · Tinggi &amp; Berat Badan</div>
+      </div>
+      <div class="scroll" style="display:flex; flex-direction:column; justify-content:center;">
+        <svg width="100%" height="120" viewBox="0 0 260 120" style="margin-bottom:18px;">
+          <rect x="20" y="86" width="220" height="8" rx="4" fill="#F5F6F9" stroke="#E6E8F0"/>
+          <path d="M60 86 C 60 40, 120 20, 150 30 C 175 38, 175 60, 150 68 C 130 74, 120 60, 130 50" fill="none" stroke="#FF6A1A" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="130" cy="50" r="7" fill="#173B8C"/>
+        </svg>
+        <div class="section-title">Masuk dengan kode otorisasi</div>
+        <div class="field">
+          <label for="kodeInput">Kode Otorisasi</label>
+          <input type="text" id="kodeInput" placeholder="Masukkan kode Anda" autocomplete="off">
+        </div>
+        <div class="error-msg" id="loginError"></div>
+      </div>
+      <div class="bottom-bar">
+        <button class="btn btn-primary" id="btnLogin">Masuk</button>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: BERANDA / PILIH ROMBEL ============ -->
+    <section class="screen" id="screen-home">
+      <div class="topbar">
+        <div class="eyebrow">Beranda</div>
+        <div class="title">Tes Fleksibilitas MPLS</div>
+        <div class="user-pill">
+          <div class="avatar" id="avatarInitial">-</div>
+          <div>
+            <div class="u-name" id="userName">-</div>
+            <div class="u-role">Petugas Pengambil Data</div>
+          </div>
+        </div>
+      </div>
+      <div class="scroll">
+        <div class="section-title">Pilih Rombel</div>
+        <div id="rombelList"></div>
+        <div class="error-msg" id="rombelError"></div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: PILIH MURID ============ -->
+    <section class="screen" id="screen-murid">
+      <div class="topbar">
+        <div class="backlink" id="backToHome">&larr; Beranda</div>
+        <div class="eyebrow" id="rombelLabel">Rombel</div>
+        <div class="title">Pilih Murid</div>
+      </div>
+      <div class="scroll">
+        <div id="muridList"></div>
+        <div class="error-msg" id="muridError"></div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: FORM INPUT ============ -->
+    <section class="screen" id="screen-form">
+      <div class="topbar">
+        <div class="backlink" id="backToMurid">&larr; Daftar Murid</div>
+        <div class="eyebrow" id="formRombelLabel">Rombel</div>
+        <div class="title" id="formMuridName">Nama Murid</div>
+      </div>
+      <div class="scroll" id="formScroll">
+
+        <div class="banner banner-locked" id="lockedBanner" style="display:none;">
+          Data murid ini sudah tersimpan di spreadsheet dan terkunci. Kosongkan sel terkait di spreadsheet untuk mengisi ulang.
+        </div>
+        <div class="banner banner-success" id="successBanner" style="display:none;">
+          Data berhasil dikirim dan tersimpan.
+        </div>
+
+        <div class="section-title">Data Fisik</div>
+
+        <div class="field">
+          <label>Penyandang Disabilitas</label>
+          <div class="toggle-group" id="disabilitasToggle">
+            <div class="toggle-opt" data-val="Ya">Ya</div>
+            <div class="toggle-opt" data-val="Tidak">Tidak</div>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field">
+            <label for="tinggiInput">Tinggi Badan (cm)</label>
+            <input type="text" inputmode="decimal" id="tinggiInput" placeholder="contoh: 158,5">
+          </div>
+          <div class="field">
+            <label for="beratInput">Berat Badan (kg)</label>
+            <input type="text" inputmode="decimal" id="beratInput" placeholder="contoh: 45,2">
+          </div>
+        </div>
+
+        <div class="section-title">Sit &amp; Reach</div>
+
+        <div class="row-2">
+          <div class="field">
+            <label for="sr1Input">Percobaan 1</label>
+            <input type="text" inputmode="decimal" id="sr1Input" placeholder="cm">
+          </div>
+          <div class="field">
+            <label for="sr2Input">Percobaan 2</label>
+            <input type="text" inputmode="decimal" id="sr2Input" placeholder="cm">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label for="sr3Input">Percobaan 3</label>
+            <input type="text" inputmode="decimal" id="sr3Input" placeholder="cm">
+          </div>
+          <div class="field">
+            <label for="srBestInput">Raihan Terbaik</label>
+            <input type="text" inputmode="decimal" id="srBestInput" placeholder="cm">
+          </div>
+        </div>
+        <div class="hint">Isian hanya menerima angka, koma (,) dan minus (-).</div>
+
+        <div class="error-msg" id="formError"></div>
+      </div>
+      <div class="bottom-bar">
+        <button class="btn btn-primary" id="btnSubmit">Kirim Data</button>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   KONFIGURASI
+   Ganti nilai di bawah ini dengan URL Web App Apps Script
+   yang sudah kamu deploy (Deploy > New deployment > Web app).
+========================================================= */
+const API_URL = "PASTE_URL_WEB_APP_GOOGLE_APPS_SCRIPT_DI_SINI";
+
+/* ============ state ============ */
+const state = {
+  pengguna: null,
+  rombel: null,
+  nama: null,
+  locked: false
+};
+
+/* ============ helpers ============ */
+function showLoading(text){
+  document.getElementById('loadingText').textContent = text || 'Memuat...';
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+function hideLoading(){
+  document.getElementById('loadingOverlay').classList.remove('active');
+}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function setError(id, msg){
+  document.getElementById(id).textContent = msg || '';
+}
+
+/* Only digits + comma (used for tinggi/berat badan) */
+function sanitizeDecimal(value){
+  return value.replace(/[^0-9,]/g, '');
+}
+/* Only digits + comma + minus (used for sit & reach) */
+function sanitizeDecimalMinus(value){
+  let v = value.replace(/[^0-9,\-]/g, '');
+  // keep a leading minus only, strip any other minus that appears later
+  let neg = v.startsWith('-');
+  v = v.replace(/-/g, '');
+  return (neg ? '-' : '') + v;
+}
+
+function attachSanitizer(inputEl, fn){
+  inputEl.addEventListener('input', () => {
+    const pos = inputEl.selectionStart;
+    const before = inputEl.value;
+    const after = fn(before);
+    if (before !== after){
+      inputEl.value = after;
+    }
+  });
+}
+
+attachSanitizer(document.getElementById('tinggiInput'), sanitizeDecimal);
+attachSanitizer(document.getElementById('beratInput'), sanitizeDecimal);
+attachSanitizer(document.getElementById('sr1Input'), sanitizeDecimalMinus);
+attachSanitizer(document.getElementById('sr2Input'), sanitizeDecimalMinus);
+attachSanitizer(document.getElementById('sr3Input'), sanitizeDecimalMinus);
+attachSanitizer(document.getElementById('srBestInput'), sanitizeDecimalMinus);
+
+/* ============ API call wrapper ============ */
+async function callApi(payload){
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight on Apps Script
+    body: JSON.stringify(payload)
+  });
+  if(!res.ok){
+    throw new Error('Gagal menghubungi server (' + res.status + ')');
+  }
+  return res.json();
+}
+
+/* ============ LOGIN ============ */
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const kode = document.getElementById('kodeInput').value.trim();
+  setError('loginError', '');
+  if(!kode){
+    setError('loginError', 'Kode otorisasi wajib diisi.');
+    return;
+  }
+  showLoading('Memeriksa kode...');
+  try{
+    const resp = await callApi({ action: 'login', kode });
+    hideLoading();
+    if(resp.ok){
+      state.pengguna = resp.pengguna;
+      document.getElementById('userName').textContent = resp.pengguna;
+      document.getElementById('avatarInitial').textContent = resp.pengguna.charAt(0).toUpperCase();
+      loadRombel();
+      showScreen('screen-home');
+    } else {
+      setError('loginError', resp.message || 'Kode otorisasi salah atau tidak ditemukan.');
+    }
+  } catch(err){
+    hideLoading();
+    setError('loginError', 'Tidak dapat terhubung ke server. Coba lagi.');
+  }
+});
+
+/* ============ ROMBEL ============ */
+async function loadRombel(){
+  setError('rombelError', '');
+  const listEl = document.getElementById('rombelList');
+  listEl.innerHTML = '';
+  showLoading('Mengambil daftar rombel...');
+  try{
+    const resp = await callApi({ action: 'getRombel' });
+    hideLoading();
+    if(resp.ok){
+      resp.rombel.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<div><div class="name">${r}</div><div class="meta">Ketuk untuk memilih rombel</div></div>`;
+        card.addEventListener('click', () => selectRombel(r));
+        listEl.appendChild(card);
+      });
+    } else {
+      setError('rombelError', resp.message || 'Gagal memuat rombel.');
+    }
+  } catch(err){
+    hideLoading();
+    setError('rombelError', 'Tidak dapat terhubung ke server.');
+  }
+}
+
+function selectRombel(rombel){
+  state.rombel = rombel;
+  document.getElementById('rombelLabel').textContent = rombel;
+  loadMurid(rombel);
+  showScreen('screen-murid');
+}
+
+document.getElementById('backToHome').addEventListener('click', () => showScreen('screen-home'));
+
+/* ============ MURID ============ */
+async function loadMurid(rombel){
+  setError('muridError', '');
+  const listEl = document.getElementById('muridList');
+  listEl.innerHTML = '';
+  showLoading('Mengambil daftar murid...');
+  try{
+    const resp = await callApi({ action: 'getMurid', rombel });
+    hideLoading();
+    if(resp.ok){
+      resp.murid.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div><div class="name">${m.nama}</div><div class="meta">${m.locked ? 'Data sudah masuk' : 'Belum diisi'}</div></div>
+          <div class="badge ${m.locked ? 'badge-locked' : 'badge-open'}">${m.locked ? 'Terkunci' : 'Isi Data'}</div>
+        `;
+        card.addEventListener('click', () => selectMurid(m.nama));
+        listEl.appendChild(card);
+      });
+    } else {
+      setError('muridError', resp.message || 'Gagal memuat murid.');
+    }
+  } catch(err){
+    hideLoading();
+    setError('muridError', 'Tidak dapat terhubung ke server.');
+  }
+}
+
+document.getElementById('backToMurid').addEventListener('click', () => showScreen('screen-murid'));
+
+/* ============ FORM ============ */
+let disabilitasVal = null;
+document.querySelectorAll('#disabilitasToggle .toggle-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    if(state.locked) return;
+    document.querySelectorAll('#disabilitasToggle .toggle-opt').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    disabilitasVal = opt.dataset.val;
+  });
+});
+
+function resetForm(){
+  disabilitasVal = null;
+  document.querySelectorAll('#disabilitasToggle .toggle-opt').forEach(o => o.classList.remove('selected'));
+  ['tinggiInput','beratInput','sr1Input','sr2Input','sr3Input','srBestInput'].forEach(id => {
+    document.getElementById(id).value = '';
+    document.getElementById(id).disabled = false;
+  });
+  document.getElementById('lockedBanner').style.display = 'none';
+  document.getElementById('successBanner').style.display = 'none';
+  document.getElementById('btnSubmit').style.display = 'block';
+  setError('formError', '');
+}
+
+async function selectMurid(nama){
+  state.nama = nama;
+  resetForm();
+  document.getElementById('formRombelLabel').textContent = state.rombel;
+  document.getElementById('formMuridName').textContent = nama;
+  showScreen('screen-form');
+  showLoading('Mengambil data murid...');
+  try{
+    const resp = await callApi({ action: 'getMuridDetail', rombel: state.rombel, nama });
+    hideLoading();
+    if(resp.ok){
+      state.locked = resp.locked;
+      if(resp.locked){
+        document.getElementById('lockedBanner').style.display = 'block';
+        document.getElementById('btnSubmit').style.display = 'none';
+      }
+      const d = resp.data || {};
+      if(d.diabilitas){
+        document.querySelectorAll('#disabilitasToggle .toggle-opt').forEach(o => {
+          if(o.dataset.val === d.diabilitas) o.classList.add('selected');
+        });
+        disabilitasVal = d.diabilitas;
+      }
+      document.getElementById('tinggiInput').value = d.tinggi_badan || '';
+      document.getElementById('beratInput').value = d.berat_badan || '';
+      document.getElementById('sr1Input').value = d.sitReach1 || '';
+      document.getElementById('sr2Input').value = d.sitReach2 || '';
+      document.getElementById('sr3Input').value = d.sitReach3 || '';
+      document.getElementById('srBestInput').value = d.sitReachTerbaik || '';
+
+      if(resp.locked){
+        ['tinggiInput','beratInput','sr1Input','sr2Input','sr3Input','srBestInput'].forEach(id => {
+          document.getElementById(id).disabled = true;
+        });
+      }
+    } else {
+      setError('formError', resp.message || 'Gagal memuat data murid.');
+    }
+  } catch(err){
+    hideLoading();
+    setError('formError', 'Tidak dapat terhubung ke server.');
+  }
+}
+
+document.getElementById('btnSubmit').addEventListener('click', async () => {
+  setError('formError', '');
+  if(!disabilitasVal){
+    setError('formError', 'Pilih status penyandang disabilitas.');
+    return;
+  }
+  const payload = {
+    action: 'submit',
+    rombel: state.rombel,
+    nama: state.nama,
+    diabilitas: disabilitasVal,
+    tinggi_badan: document.getElementById('tinggiInput').value.trim(),
+    berat_badan: document.getElementById('beratInput').value.trim(),
+    sitReach1: document.getElementById('sr1Input').value.trim(),
+    sitReach2: document.getElementById('sr2Input').value.trim(),
+    sitReach3: document.getElementById('sr3Input').value.trim(),
+    sitReachTerbaik: document.getElementById('srBestInput').value.trim()
+  };
+  showLoading('Mengirim data...');
+  try{
+    const resp = await callApi(payload);
+    hideLoading();
+    if(resp.ok){
+      document.getElementById('successBanner').style.display = 'block';
+      document.getElementById('btnSubmit').style.display = 'none';
+      ['tinggiInput','beratInput','sr1Input','sr2Input','sr3Input','srBestInput'].forEach(id => {
+        document.getElementById(id).disabled = true;
+      });
+      state.locked = true;
+      // refresh murid list in background so lock badge is accurate on return
+      loadMurid(state.rombel);
+    } else {
+      setError('formError', resp.message || 'Gagal mengirim data.');
+    }
+  } catch(err){
+    hideLoading();
+    setError('formError', 'Tidak dapat terhubung ke server.');
+  }
+});
+</script>
+</body>
+</html>
